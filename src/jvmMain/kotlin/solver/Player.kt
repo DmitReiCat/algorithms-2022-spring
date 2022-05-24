@@ -1,10 +1,8 @@
-package samples
+package solver
 
 import core.*
-import lab.Controller
-import lab.Labyrinth
 
-class Human : AbstractPlayer() {
+class HumanV2 : AbstractPlayer() {
     override fun getNextMove(): Move {
         println("Enter w (UP), d (EAST), s (SOUTH), a (WEST) or x (WAIT)")
         val answer = readLine()
@@ -23,15 +21,15 @@ class Human : AbstractPlayer() {
     }
 }
 
-fun main(args: Array<String>) {
-    val lab = Labyrinth.createFromFile("labyrinths/lab3.txt")
-    val player = Human()
-    val controller = Controller(lab, player)
-    val result = controller.makeMoves(1000)
-    if (result.exitReached) {
-        println("You won!")
-    }
-    else {
-        println("You lose!")
-    }
+enum class Strategy {
+    EXPLORE_SPAWN_AREA,
+    CHECK_TO_MERGE_AREA,
+    CYCLE_PREVENTION
+}
+
+enum class Decision {
+    EXPLORE_START,
+    EXPLORE_WALL,
+
+
 }

@@ -1,4 +1,4 @@
-package Graphics
+package graphics
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.background
@@ -15,18 +15,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
 
-val CELL_SIZE = 50.dp
 
 object Colors {
     val WALL = Color(0xFF000000)
-    val PASSED = Color(0xFFB8860B)
-    val TREASURE = Color(0xFFB8860B)
+    val PASSED = Color(0xFFFF8C00)
+    val TREASURE = Color(0xFF006400)
     val START = Color(0xFFFF0000)
     val EXIT = Color(0xFF00FF00)
     val TO_PASS = Color(0xFFFFFF00)
-    val CURRENT = Color(0xFFF0E68C)
+    val CURRENT = Color(0xFFFF6347)
     val WORMHOLE = Color(0xFF8A2BE2)
     val LAST_WORMHOLE = Color(0xFF4B0082)
 }
@@ -35,28 +33,37 @@ object Colors {
 @Composable
 @Preview
 fun AppScreen() {
-    val isMapInited by remember { ViewModel.isMapInited }
+    val isMapInited by remember { ViewModel.isRunning }
+    val mapsTotal by remember { ViewModel.mapsTotal }
     
     MaterialTheme {
         Column {
             Button(
                 enabled = !isMapInited,
-                onClick = {
-                    ViewModel.start()
-                }
+                onClick = { ViewModel.start() }
             ) {
                 Text(
                     text = if (isMapInited) "Running..." else "Start"
                 )
             }
-            if (isMapInited) {
-                for (y in ViewModel._currentMap!!.indices) {
-                    Row {
-                        for (x in ViewModel._currentMap!![y].indices) {
-                            Cell(y, x)
+            Button(
+                onClick = { ViewModel.addMap() }
+            ) {
+                Text("Add newMap")
+            }
+            if (mapsTotal != 0 && isMapInited) {
+                for (currentMapIndex in ViewModel.allMaps.indices) {
+                    Text("Labyrinth $currentMapIndex")
+                    if (currentMapIndex == 1) println("MAP 1 IS SHOWN")
+                    for (y in ViewModel.allMaps[currentMapIndex].indices) {
+                        Row {
+                            for (x in ViewModel.allMaps[currentMapIndex][y].indices) {
+                                Cell(currentMapIndex, y, x)
+                            }
                         }
                     }
                 }
+
             }
         }
     }
@@ -72,10 +79,10 @@ fun AppScreen() {
 //}
 
 @Composable
-fun Cell(y: Int, x: Int) {
+fun Cell(currentMapIndex: Int, y: Int, x: Int) {
 
     val currPos by remember { ViewModel.stateOfCurrPose }
-    val ch by remember { ViewModel._currentMap!![y][x] }
+    val ch by remember { ViewModel.allMaps[currentMapIndex][y][x] }
     var color = when (ch) {
         "#" -> Colors.WALL
         "T" -> Colors.TREASURE
@@ -93,7 +100,7 @@ fun Cell(y: Int, x: Int) {
             .size(CELL_SIZE)
             .background(color)
     ) {
-        if (ch !in setOf("#", "T", "*")) {
+        if (ch !in setOf("#", "*")) {
             Text(
                 text = ch
             )

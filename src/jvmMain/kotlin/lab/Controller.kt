@@ -1,6 +1,7 @@
 package lab
 
-import Graphics.ViewModel
+import graphics.FRAMERATE
+import graphics.ViewModel
 
 import core.*
 import java.lang.Thread.sleep
@@ -16,7 +17,7 @@ class Controller(private val lab: Labyrinth, private val player: Player) {
 
     /**  File Edit  */
     init {  //
-        ViewModel.initMap(lab)  //
+        ViewModel.initLabyrinth(lab)  //
     }   //
 
     private var playerCondition: Condition = Condition()
@@ -93,8 +94,8 @@ class Controller(private val lab: Labyrinth, private val player: Player) {
 
 
             /**  File Edit  */
-            ViewModel.updateMap(playerLocation) //
-            sleep(1000 / ViewModel.FRAMERATE) //
+            ViewModel.updateCurrentLocation(playerLocation) //
+            sleep(1000 / FRAMERATE) //
         }
         return GameResult(moves, playerCondition.exitReached)
     }

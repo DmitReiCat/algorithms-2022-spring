@@ -1,5 +1,5 @@
 
-import Graphics.AppScreen
+import graphics.AppScreen
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 
