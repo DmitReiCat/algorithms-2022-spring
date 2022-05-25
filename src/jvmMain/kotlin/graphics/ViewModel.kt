@@ -58,8 +58,8 @@ object ViewModel {
         }
         val offset = if (index == 0) Location(1,1) else allMapsOffsets[index + 1]!!
         allMaps[index + 1][(current.first + offset).y][(current.first + offset).x].value = ch.toString()
-        println("index =${index + 1} offset=$offset")
-        println("######")
+//        println("index =${index + 1} offset=$offset")
+//        println("######")
         toDiscover.forEach {
             allMaps[index + 1][it.y + offset.y][it.x + offset.x].value = "*"
         }
@@ -128,7 +128,7 @@ object ViewModel {
         if (!isRunning.value) {
             thread {
                 val playerRun = object : AbstractPlayerRun() {
-                    override fun createPlayer() = Human()
+                    override fun createPlayer() = HumanV2()
                 }
                 playerRun.doTestLab(pathToLabyrinth)
                 isRunning.value = false
@@ -150,6 +150,7 @@ abstract class AbstractPlayerRun {
         val lab = Labyrinth.createFromFile(fileName)
         val player = createPlayer()
         val controller = Controller(lab, player)
+        sleep(100) // wait for compose to initialize view
         val actualResult = controller.makeMoves(500)
         if (actualResult.exitReached) {
             println("You won!")

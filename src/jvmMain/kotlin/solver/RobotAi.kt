@@ -2,8 +2,9 @@ package solver
 
 import core.*
 import graphics.ViewModel
-import solver.strategies.RyoikiTenkai
+import solver.strategies.SpyralExpansion
 import solver.strategies.Strategy
+import solver.strategies.WallExploration
 
 class HumanV2 : AbstractPlayer() {
 
@@ -23,7 +24,7 @@ class HumanV2 : AbstractPlayer() {
                 current = Pair(startLocation, Entrance),
                 relStartLoc = startLocation
             )
-            currentStrategy = RyoikiTenkai(playerMaps[0])
+            currentStrategy = SpyralExpansion(playerMaps[0])
             currentStrategy!!.nextMove()
         }
 //        println("Enter w (UP), d (EAST), s (SOUTH), a (WEST) or x (WAIT)")
@@ -46,7 +47,7 @@ class HumanV2 : AbstractPlayer() {
             current = Pair(Location(0,0), Wormhole(1)),
             relStartLoc = Location(0,0)
         )
-        currentStrategy = RyoikiTenkai(playerMaps.last())
+        currentStrategy = SpyralExpansion(playerMaps.last())
     }
 
 
@@ -68,13 +69,12 @@ class HumanV2 : AbstractPlayer() {
                 else -> {  } //do nothing
             }
         }
-        when(result.room) {
-            Entrance -> playerMaps[currentMapIndex].apply { entrance = currentLocation }
-            Exit -> playerMaps[currentMapIndex].apply { exit = currentLocation }
-            is WithContent -> playerMaps[currentMapIndex].apply { treasureFound = true; treasure = currentLocation }
-            is Wormhole -> playerMaps[currentMapIndex].apply { wormholes[currentLocation] = WormholeId() }
-            else -> {  } //do nothing
+        if (!result.successful) {
+//            println(playerMaps[currentMapIndex].lastMove)
+//            println(playerMaps[currentMapIndex].lastMove.turnLeft())
+            currentStrategy = WallExploration(playerMaps[currentMapIndex])
         }
+
         resInMap.discoverCellsToVisualize = mutableSetOf()
 //        println(result.status)
     }
