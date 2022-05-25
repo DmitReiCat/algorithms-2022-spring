@@ -87,16 +87,16 @@ class Controller(private val lab: Labyrinth, private val player: Player) {
                 MoveResult(newRoom, playerCondition, movePossible, status)
             }
         }
+        /**  File Edit  */
+        ViewModel.updateCurrentLocation(playerLocation) //
+
         player.setMoveResult(moveResult)
         if (moveResult.successful) {
             moves++
-
-
-
-            /**  File Edit  */
-            ViewModel.updateCurrentLocation(playerLocation) //
-            sleep(1000 / FRAMERATE) //
         }
+        /**  File Edit  */
+        ViewModel.updateCurrentLocation(playerLocation) //
+        sleep(FRAMERATE) //
         return GameResult(moves, playerCondition.exitReached)
     }
 

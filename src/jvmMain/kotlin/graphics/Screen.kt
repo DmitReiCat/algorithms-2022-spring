@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -37,33 +38,37 @@ fun AppScreen() {
     val mapsTotal by remember { ViewModel.mapsTotal }
     
     MaterialTheme {
-        Column {
-            Button(
-                enabled = !isMapInited,
-                onClick = { ViewModel.start() }
-            ) {
-                Text(
-                    text = if (isMapInited) "Running..." else "Start"
-                )
-            }
-            Button(
-                onClick = { ViewModel.addMap() }
-            ) {
-                Text("Add newMap")
-            }
-            if (mapsTotal != 0 && isMapInited) {
-                for (currentMapIndex in ViewModel.allMaps.indices) {
-                    Text("Labyrinth $currentMapIndex")
-                    if (currentMapIndex == 1) println("MAP 1 IS SHOWN")
-                    for (y in ViewModel.allMaps[currentMapIndex].indices) {
-                        Row {
-                            for (x in ViewModel.allMaps[currentMapIndex][y].indices) {
-                                Cell(currentMapIndex, y, x)
+        LazyColumn {
+            item {
+                Column {
+                    Button(
+                        enabled = !isMapInited,
+                        onClick = { ViewModel.start() }
+                    ) {
+                        Text(
+                            text = if (isMapInited) "Running..." else "Start"
+                        )
+                    }
+                    Button(
+                        onClick = { ViewModel.addEmptyMap() }
+                    ) {
+                        Text("Add newMap")
+                    }
+                    if (mapsTotal != 0 && isMapInited) {
+                        for (currentMapIndex in ViewModel.allMaps.indices) {
+                            Text("Labyrinth $currentMapIndex")
+                            if (currentMapIndex == 1) println("MAP 1 IS SHOWN")
+                            for (y in ViewModel.allMaps[currentMapIndex].indices) {
+                                Row {
+                                    for (x in ViewModel.allMaps[currentMapIndex][y].indices) {
+                                        Cell(currentMapIndex, y, x)
+                                    }
+                                }
                             }
                         }
+
                     }
                 }
-
             }
         }
     }
@@ -101,9 +106,11 @@ fun Cell(currentMapIndex: Int, y: Int, x: Int) {
             .background(color)
     ) {
         if (ch !in setOf("#", "*")) {
+            val text = if (ch == "") "?" else ch
             Text(
-                text = ch
+                text = text
             )
         }
+
     }
 }
