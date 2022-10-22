@@ -1,6 +1,7 @@
 package solver
 
 import core.*
+import graphics.Presenter
 import graphics.ViewModel
 
 class PlayerMapFactory(val actualStartLocation: Location) {
@@ -24,7 +25,7 @@ class PlayerMapFactory(val actualStartLocation: Location) {
 
     private fun addNewMap(startRoom: Room, startLocation: Location = Location(0,0)) {
         currentMapIndex++
-        println("newMapAdded")
+        println("newMapAdded, total map size = ${playerMaps.size}")
         playerMaps.add(PlayerMap(startLocation, startRoom == Entrance))
         currentMap.calcToDiscover()
         updateGraphics()
@@ -32,13 +33,7 @@ class PlayerMapFactory(val actualStartLocation: Location) {
     }
 
     fun updateGraphics() {
-        currentMap.let {
-            ViewModel.updatePlayerMap(
-                index = currentMapIndex,
-                toDiscover = it.toDiscover, // TODO()
-                current = it.roomToVisualize
-            )
-        }
+        Presenter.updateGraphics(currentMap)
     }
 
     fun updateCurrentMap(result: MoveResult) {
@@ -62,7 +57,6 @@ class PlayerMapFactory(val actualStartLocation: Location) {
                 else -> {} //do nothing
             }
         }
-        currentMap.discoverCellsToVisualize = mutableSetOf()
     }
 
 }

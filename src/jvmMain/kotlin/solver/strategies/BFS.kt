@@ -9,7 +9,7 @@ fun findClosestOrGoal(
     goal: Location? = null,
     start: Location = currentMap.currentLocation
 ): ArrayDeque<WalkMove> {
-
+    println("BFS LAUNCH (startLoc=${currentMap.knownLocations[start]}, goal=$goal}")
     val toExpand = ArrayDeque<Location>()
     val knownLocations = mutableMapOf(start to 0)
     var isRouteFound = false
@@ -19,9 +19,13 @@ fun findClosestOrGoal(
         for (direction in directionSet) {
             val possibleLocation = direction + location
             if (possibleLocation.let {
-                    it !in knownLocations && it !in toExpand
-                            && (it in currentMap.knownLocations && currentMap.knownLocations[it] !is Wall
-                            || (it in currentMap.toDiscover && goal == null)) // todo(Check for Maze)
+                    it !in knownLocations &&
+                            it !in toExpand &&
+                            (it in currentMap.knownLocations &&
+                                    currentMap.knownLocations[it] !is Wall &&
+                                    (currentMap.knownLocations[it] !is Wormhole || it == goal) ||
+                                    (it in currentMap.toDiscover && goal == null)
+                                    ) // todo(Check for Maze)
                 }
             ) {
                 toExpand.addLast(possibleLocation)
@@ -40,7 +44,6 @@ fun findClosestOrGoal(
             expandUntilGoal(newLocation)
         }
     }
-    println(start)
     expandUntilGoal(start)
     val route = ArrayDeque<WalkMove>()
     reconstructFromMap(knownLocations, start, endLocation, route)

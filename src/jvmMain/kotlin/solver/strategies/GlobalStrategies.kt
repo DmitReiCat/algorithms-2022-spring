@@ -36,20 +36,20 @@ class FindAllWormholes(private val mapFactory: PlayerMapFactory) : AbstractGloba
         }
 
     private fun PlayerMap.recalculateLocationsAndMerge(room: Room) {
+        println("maps are merging!, total maps size = ${mapFactory.playerMaps.size}")
         when (room) {
             Entrance -> {
                 val mapToMerge = this
                 val startMap = mapFactory.playerMaps[0]
                 val offset = mapFactory.lastDirection + mapToMerge.currentLocation - mapFactory.actualStartLocation //TODO(Right calculations)
                 startMap.knownLocations += mapToMerge.knownLocations.mapKeys { it.key - offset }
-                startMap.toDiscover += mapToMerge.toDiscover.map { it - offset }.filter { it !in knownLocations }
+                startMap.toDiscover += mapToMerge.toDiscover.map { it - offset }.filter { it - offset !in knownLocations }
 
                 if (startMap.treasure == null) startMap.treasure = mapToMerge.treasure?.minus(offset)
                 startMap.wormholes += mapToMerge.wormholes.mapKeys { it.key - offset }
                 startMap.currentLocation = mapToMerge.currentLocation - offset
                 mapFactory.currentMapIndex = 0
-                mapFactory.playerMaps.removeLast()
-                ViewModel.removeLastMap()
+                mapFactory.playerMaps.remove(this)
                 mapFactory.updateGraphics()
                 subStrategy = RyoikiTenkai(mapFactory.currentMap)
             }

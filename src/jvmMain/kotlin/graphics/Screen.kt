@@ -16,6 +16,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 
 
 object Colors {
@@ -29,7 +30,7 @@ object Colors {
     val WORMHOLE = Color(0xFF8A2BE2)
     val LAST_WORMHOLE = Color(0xFF4B0082)
 
-    val UNKNOWN = Color(0x558A2BE2)
+    val UNKNOWN = Color(0xFF088DA5)
 }
 
 
@@ -38,7 +39,7 @@ object Colors {
 fun AppScreen() {
     val isMapInited by remember { ViewModel.isRunning }
     val mapsTotal by remember { ViewModel.mapsTotal }
-    
+
     MaterialTheme {
         LazyColumn {
             item {
@@ -74,16 +75,19 @@ fun AppScreen() {
                         }
                     }
                     if (mapsTotal != 0 && isMapInited) {
-                        for (currentMapIndex in ViewModel.gameState.allMaps.indices) {
-                            Text("Labyrinth $currentMapIndex")
-                            for (y in ViewModel.gameState.allMaps[currentMapIndex].indices) {
-                                Row {
-                                    for (x in ViewModel.gameState.allMaps[currentMapIndex][y].indices) {
-                                        Cell(currentMapIndex, y, x)
+
+                            for (currentMapIndex in ViewModel.gameState.allMaps.indices) {
+                                Text("Labyrinth $currentMapIndex")
+
+                                for (y in ViewModel.gameState.allMaps[currentMapIndex].value.indices) {
+                                    Row {
+                                        for (x in ViewModel.gameState.allMaps[currentMapIndex].value[y].indices) {
+                                            val ch = ViewModel.gameState.allMaps[currentMapIndex].value[y][x]
+                                            Cell(currentMapIndex, y, x, ch)
+                                        }
                                     }
                                 }
                             }
-                        }
 
                     }
                 }
@@ -102,10 +106,9 @@ fun AppScreen() {
 //}
 
 @Composable
-fun Cell(currentMapIndex: Int, y: Int, x: Int) {
-
+fun Cell(currentMapIndex: Int, y: Int, x: Int, ch: String) {
     val currPos by remember { ViewModel.gameState.stateOfCurrPose }
-    val ch by remember { ViewModel.gameState.allMaps[currentMapIndex][y][x] }
+
     var color = when (ch) {
         "#" -> Colors.WALL
         "T" -> Colors.TREASURE
@@ -116,20 +119,28 @@ fun Cell(currentMapIndex: Int, y: Int, x: Int) {
         "" -> Colors.UNKNOWN
         else -> Colors.WORMHOLE
     }
-    if (currPos?.x == x-1 && currPos?.y == y-1) color = Colors.CURRENT
-//    println("${currPos} ${x-1} ${y-1})}")
-    Box(
+    if (currentMapIndex == 0 && currPos?.x == x-1 && currPos?.y == y-1) {
+        color = Colors.CURRENT
+    }
+    Box (
         contentAlignment = Alignment.Center,
         modifier = Modifier
-            .size(CELL_SIZE)
-            .background(color)
+            .size(CELL_SIZE + 2.dp)
+            .background(Color.Black)
     ) {
-        if (ch !in setOf("#", "*")) {
-            val text = if (ch == "") "?" else ch
-            Text(
-                text = text
-            )
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .size(CELL_SIZE)
+                .background(color)
+        ) {
+            if (ch !in setOf("#", "*")) {
+                val text = if (ch == "") "?" else ch
+                Text(
+                    text = text
+                )
+            }
         }
-
     }
+
 }

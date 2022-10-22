@@ -6,9 +6,12 @@ import androidx.compose.runtime.mutableStateOf
 import core.*
 import lab.Controller
 import lab.Labyrinth
+import samples.Human
+import solver.minus
 import solver.plus
 import java.lang.Thread.sleep
 import kotlin.concurrent.thread
+import kotlin.math.abs
 
 
 // TODO(Make a game object on press start)
@@ -17,23 +20,62 @@ object ViewModel {
     val isRunning = mutableStateOf(false)
     val mapsTotal = mutableStateOf(0)
 
-    fun updatePlayerMap(
-        index: Int,
-        toDiscover: Set<Location> = setOf(),
-        current: MutableMap<Location, Room>
+    fun updateFullMap(
+        knownLocations: MutableMap<Location, Room>,
+        toDiscover: MutableSet<Location>
     ) {
-        current.forEach { (location, room) ->
-            gameState.apply {
-                val ch = getCharFromRoom(room)
-                if (index + 1 > allMaps.size - 1) addEmptyMap()
-                val offset = if (index == 0) Location(1, 1) else allMapsOffsets[index + 1]!!
-                allMaps[index + 1][(location + offset).y][(location + offset).x].value = ch.toString()
-                toDiscover.forEach {
-                    allMaps[index + 1][it.y + offset.y][it.x + offset.x].value = "*"
-                }
+
+
+        var maxX: Int = Int.MIN_VALUE
+        var minX: Int = Int.MAX_VALUE
+        var maxY: Int = Int.MIN_VALUE
+        var minY: Int = Int.MAX_VALUE
+
+
+        toDiscover.forEach { location ->
+            if (location.x < minX) minX = location.x
+            if (location.x > maxX) maxX = location.x
+            if (location.y < minY) minY = location.y
+            if (location.y > maxY) maxY = location.y
+        }
+
+        knownLocations.forEach { (location, _) ->
+            if (location.x < minX) minX = location.x
+            if (location.x > maxX) maxX = location.x
+            if (location.y < minY) minY = location.y
+            if (location.y > maxY) maxY = location.y
+        }
+
+        val mapOffset = Location(minX, minY)
+
+        var mapHeight = maxY - minY + 1
+        var mapWight = maxX - minX + 1
+
+        val newUIMap = Array(mapHeight) { Array(mapWight) { "" } }
+        for (y in 0 until mapHeight) {
+            for (x in 0 until mapWight) {
+                val ch = knownLocations[Location(x, y) + mapOffset]?.let {
+                    getCharFromRoom(it).toString()
+                } ?:  ""
+                newUIMap[y][x] = ch
             }
         }
+        for (y in 0 until mapHeight) {
+            for (x in 0 until mapWight) {
+                val ch = if (toDiscover.contains(Location(x, y) + mapOffset)) "*" else ""
+                if (ch == "*") newUIMap[y][x] = ch
+            }
+        }
+
+        gameState.apply {
+            if (mapsTotal.value == 1) {
+                allMaps.add(mutableStateOf(newUIMap))
+                mapsTotal.value++
+            }
+            allMaps[1].value = newUIMap
+        }
     }
+
 
     fun updateCurrentLocation(location: Location) {
         gameState.apply {
@@ -41,12 +83,6 @@ object ViewModel {
             currPos = location
             stateOfCurrPose.value = location
             prevPos = currPos
-        }
-    }
-    fun removeLastMap() {
-        gameState.apply {
-            mapsTotal.value--
-            allMaps.removeLast()
         }
     }
 
@@ -61,16 +97,16 @@ object ViewModel {
     }
 
     fun initLabyrinth(lab: Labyrinth) {
-        val map = Array(lab.height + 2) { Array(lab.width + 2) { mutableStateOf("") } }
+        val map = Array(lab.height + 2) { Array(lab.width + 2) { "" } }
         for (y in -1..lab.height) {
             for (x in -1..lab.width) {
                 val ch = getCharFromRoom(lab[x, y])
                 if (ch == 'S') updateCurrentLocation(Location(x, y))
-                map[y + 1][x + 1].value = ch.toString()
+                map[y + 1][x + 1] = ch.toString()
             }
         }
         gameState.apply {
-            allMaps.add(map)
+            allMaps.add(mutableStateOf(map))
             allMapsOffsets.add(Location(0, 0))
             labHeight = lab.height + 2
             labWidth = lab.width + 2
@@ -79,14 +115,6 @@ object ViewModel {
         }
     }
 
-    fun addEmptyMap() {
-        gameState.apply {
-            val map = Array(labHeight) { Array(labWidth) { mutableStateOf("") } }
-            allMaps.add(map)
-            allMapsOffsets.add(currPos!! + Location(1, 1))
-            mapsTotal.value++
-        }
-    }
 
     fun start() {
         gameState = GameState()
@@ -129,8 +157,7 @@ class GameState {
     var labHeight = 0
     var labWidth = 0
     lateinit var startLoc: Location
-    var allMaps = mutableListOf<Array<Array<MutableState<String>>>>()
+    var allMaps = mutableListOf<MutableState<Array<Array<String>>>>()
     val allMapsOffsets = mutableListOf<Location?>()
-
 
 }
